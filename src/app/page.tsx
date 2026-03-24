@@ -152,13 +152,20 @@ export default function Dashboard() {
     if (savedStaff) setStaff(JSON.parse(savedStaff));
     if (savedRecords) setAttendanceRecords(JSON.parse(savedRecords));
 
-    // Listen for storage changes from extension (if it updates localStorage)
-    // or just periodic check if we want to be fancy.
-    // However, the easiest for "scrpy langsung" extension is for the extension 
-    // to just tell the dashboard to refresh.
+    // Listen for storage changes from extension
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'attendance_records' && e.newValue) {
-        setAttendanceRecords(JSON.parse(e.newValue));
+        const records = JSON.parse(e.newValue);
+        setAttendanceRecords(records);
+        
+        // Show success notification when new records arrive from extension
+        const normalizeForMatch = (name: string) => name.replace(/\s+/g, '').trim().toLowerCase();
+        const matched = staff.filter(s => 
+          records.some((r: any) => normalizeForMatch(r.name) === normalizeForMatch(s.name))
+        ).length;
+        
+        setError(`Data Web Terupdate! (${matched}/${staff.length} staff terdeteksi)`);
+        setTimeout(() => setError(null), 3000);
       }
     };
     window.addEventListener('storage', handleStorageChange);
