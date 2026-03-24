@@ -38,10 +38,14 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [isWebLoading, setIsWebLoading] = useState(false);
 
-  useEffect(() => {
-    const statuses = staff.map(s => 
-      getAttendanceStatus(s, attendanceRecords)
-    );
+    const statuses = staff.map(s => {
+      const status = getAttendanceStatus(s, attendanceRecords);
+      // Ensure we don't have undefined shift issues
+      if (!s.shift) {
+        console.warn(`Staff ${s.name} has no shift assigned.`);
+      }
+      return status;
+    });
     setAttendanceStatuses(statuses);
   }, [staff, attendanceRecords]);
 
@@ -69,12 +73,13 @@ export default function Dashboard() {
         setAttendanceRecords(data.records);
         localStorage.setItem('attendance_records', JSON.stringify(data.records));
         
-        const normalize = (name: string) => name.replace(/\s+/g, '').trim().toLowerCase();
+        // Use the same normalization as in attendance.ts for accurate count
+        const normalizeForMatch = (name: string) => name.replace(/\s+/g, '').trim().toLowerCase();
         const matched = staff.filter(s => 
-          data.records.some((r: any) => normalize(r.name) === normalize(s.name))
+          data.records.some((r: any) => normalizeForMatch(r.name) === normalizeForMatch(s.name))
         ).length;
 
-        setError(`Berhasil mengambil ${data.records.length} data web. (${matched} staff terdeteksi)`);
+        setError(`Berhasil mengambil ${data.records.length} data web. (${matched} staff terdeteksi dari ${staff.length} total)`);
         setTimeout(() => setError(null), 5000);
       } else {
         setError(data.error || 'Gagal mengambil data dari website.');
@@ -100,19 +105,42 @@ export default function Dashboard() {
     setIsLoading(true);
     setError(null);
     try {
+      // URL Web App Google Apps Script
       const url = 'https://script.google.com/macros/s/AKfycbxWyF9MHr-1syyRn7rOcgrmCgxKxQjKl2sj8Vtb9mcRNn8eOpBkrIK3Yk8zMeWSnIHKmA/exec';
-      const response = await fetch(url);
-      const data = await response.json();
       
-      if (Array.isArray(data)) {
-        handleStaffUpload(data);
-        setError(`Berhasil sinkronisasi ${data.length} staff dari Google Sheets.`);
+      console.log('Fetching from Google Sheets...');
+      const response = await fetch(url, { cache: 'no-store' });
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      console.log('Data received from GAS:', data);
+      
+      if (Array.isArray(data) && data.length > 0) {
+        // Mapping fields strictly according to google_script.gs output:
+        // shift, name, startTime, endTime
+        const mappedStaff = data.map((item: any) => ({
+          name: (item.name || item.Nama || '').trim(),
+          shift: (item.shift || item.Shift || '').toUpperCase().trim(),
+          startTime: item.startTime || item['Jam Masuk'] || null,
+          endTime: item.endTime || item['Jam Pulang'] || null
+        })).filter(s => s.name !== '' && s.shift !== '');
+
+        if (mappedStaff.length === 0) {
+          throw new Error('Tidak ada data staff yang valid ditemukan dalam Spreadsheet.');
+        }
+
+        setStaff(mappedStaff);
+        localStorage.setItem('attendance_staff', JSON.stringify(mappedStaff));
+        
+        setError(`Berhasil sinkronisasi ${mappedStaff.length} staff dari Google Sheets.`);
         setTimeout(() => setError(null), 5000);
       } else {
-        throw new Error('Format data Google Sheets tidak valid.');
+        throw new Error(data.error || 'Data Google Sheets kosong atau format tidak sesuai.');
       }
-    } catch (err) {
-      setError('Gagal sinkronisasi dari Google Sheets. Pastikan URL Web App sudah benar.');
+    } catch (err: any) {
+      console.error('Sync Error:', err);
+      setError(`Gagal sinkronisasi: ${err.message}. Pastikan URL Web App benar dan sudah di-Deploy sebagai 'Anyone'.`);
     } finally {
       setIsLoading(false);
     }
