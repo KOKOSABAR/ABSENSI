@@ -47,7 +47,10 @@ async function startAutoScraping() {
 
 async function sendToDashboard(records) {
   try {
-    const dashboardTabs = await chrome.tabs.query({ url: "http://localhost:3000/*" });
+    const { dashboardUrl = 'http://localhost:3000' } = await chrome.storage.local.get(['dashboardUrl']);
+    const baseUrl = dashboardUrl.replace(/\/$/, '');
+
+    const dashboardTabs = await chrome.tabs.query({ url: baseUrl + "/*" });
     if (dashboardTabs.length > 0) {
       chrome.scripting.executeScript({
         target: { tabId: dashboardTabs[0].id },
@@ -61,7 +64,7 @@ async function sendToDashboard(records) {
         args: [records]
       });
     } else {
-      await fetch('http://localhost:3000/api/attendance/update', {
+      await fetch(`${baseUrl}/api/attendance/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ records })
