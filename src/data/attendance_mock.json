@@ -1,0 +1,52 @@
+[
+  {
+    "name": "PRITA GUSTINI",
+    "role": "GENERAL",
+    "jobDesk": ["DEPO BNI", "DEPO MAYBANK", "DEPO DANAMON"],
+    "mobileCheckIn": "07.31",
+    "desktopCheckIn": "07.43",
+    "checkOut": "--:--",
+    "status": "HADIR",
+    "duration": "-"
+  },
+  {
+    "name": "Muhammad rio Afriza",
+    "role": "GENERAL",
+    "jobDesk": [],
+    "mobileCheckIn": "07.26",
+    "desktopCheckIn": "07.43",
+    "checkOut": "--:--",
+    "status": "HADIR",
+    "duration": "-"
+  },
+  {
+    "name": "IQBAL ILHAM PRATAMA TAMBOKAN",
+    "role": "GENERAL",
+    "jobDesk": ["EVENT SCATER"],
+    "mobileCheckIn": "07.26",
+    "desktopCheckIn": "07.39",
+    "checkOut": "--:--",
+    "status": "HADIR",
+    "duration": "-"
+  },
+  {
+    "name": "AFIF RAIS",
+    "role": "GENERAL",
+    "jobDesk": [],
+    "mobileCheckIn": "07.21",
+    "desktopCheckIn": "07.44",
+    "checkOut": "--:--",
+    "status": "HADIR",
+    "duration": "-"
+  },
+  {
+    "name": "DIAZ HERMAWAN",
+    "role": "GENERAL",
+    "jobDesk": ["COSTUMER SERVICE"],
+    "mobileCheckIn": "07.21",
+    "desktopCheckIn": "07.42",
+    "checkOut": "--:--",
+    "status": "HADIR",
+    "duration": "-"
+  }
+]

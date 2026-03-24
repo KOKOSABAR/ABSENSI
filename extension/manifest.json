@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "WBTEAM Scraper Assistant",
+  "version": "1.0",
+  "description": "Scrape data langsung dari dashboard WBTEAM ke Dashboard Absensi",
+  "permissions": ["activeTab", "scripting", "alarms", "storage", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://aa.wbteam.cloud/attendance*"],
+      "js": ["content.js"]
+    }
+  ],
+  "host_permissions": ["http://localhost:3000/*"]
+}
